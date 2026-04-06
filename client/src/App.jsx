@@ -4,7 +4,7 @@ import Lobby from './Lobby'
 import Game from './Game'
 
 // Create the socket connection once — persists for the whole session
-const socket = io('http://localhost:3001')
+const socket = io('https://litt-server.onrender.com')
 
 function App() {
   const [connected, setConnected] = useState(false)
