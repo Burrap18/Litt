@@ -28,6 +28,7 @@ function Lobby({ socket, onGameStart }) {
 
   // Stores any error messages to show the player
   const [error, setError] = useState('')
+  const [showRules, setShowRules] = useState(false)
 
   // useEffect runs once when the component loads.
   // We set up all our Socket.io listeners here.
@@ -148,6 +149,57 @@ function Lobby({ socket, onGameStart }) {
         >
           Join game
         </button>
+
+        {/* Rules dropdown */}
+        <div style={{ marginTop: '24px' }}>
+          <button
+            onClick={() => setShowRules(!showRules)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#378add',
+              fontSize: '14px',
+              cursor: 'pointer',
+              padding: '0',
+              textDecoration: 'underline'
+            }}
+          >
+            {showRules ? 'Hide rules ▲' : 'Rules of Litt ▼'}
+          </button>
+
+          {showRules && (
+            <div style={{
+              marginTop: '12px',
+              background: '#f5f5f5',
+              borderRadius: '8px',
+              padding: '16px',
+              fontSize: '14px',
+              lineHeight: '1.8',
+              color: '#333',
+              maxHeight: '400px',
+              overflowY: 'auto'
+            }}>
+              <ol style={{ margin: 0, paddingLeft: '20px' }}>
+                <li>Litt is played by 4 players divided into 2 teams of 2.</li>
+                <li>The game uses a standard deck with all 2s removed — 48 cards total. Each suit runs from 3 to Ace.</li>
+                <li>Each suit is divided into two cases: lower (3–8) and upper (9–A). There are 8 cases in total.</li>
+                <li>The objective is to win a majority of the 8 cases. The first team to win 5 cases wins. If one team wins 4 and the other wins 3 with 1 undeclared, the team with 4 wins.</li>
+                <li>The 48 cards are shuffled and dealt equally — 12 cards per player.</li>
+                <li>Teammates sit across from each other. P1 &amp; P3 form one team, P2 &amp; P4 the other.</li>
+                <li>The 4 twos are shuffled and dealt face up. The player who receives the 2 of hearts starts the game. The twos are then set aside.</li>
+                <li>Teammates never interact with each other directly — all interactions are with the opposition.</li>
+                <li>On your turn you may do one of two things: ask an opponent for a card, or declare a case.</li>
+                <li>To ask for a card, pick one opponent and name a specific card. If they have it, they must give it to you and you keep your turn. If they don't have it, no card is exchanged and it becomes their turn.</li>
+                <li>Base card rule: to ask for a card, you must already hold at least one other card from the same case. For example, to ask for the Ace of spades, you must hold at least one of 9♠ 10♠ J♠ Q♠ K♠.</li>
+                <li>To declare a case, put down your cards from that case. If your teammate holds the remaining cards and no opponent holds any, your team wins the case. If any opponent holds even one card from that case, the opposing team wins it.</li>
+                <li>After a successful declaration, if the declarer had all 6 cards they keep the turn. If the teammate completed it, the teammate gets the turn. If one player on the declaring team runs out of cards, the other gets the turn.</li>
+                <li>After a failed declaration, the opponent who held the most cards from that case gets the turn. Tiebreaker: whoever held the highest card. If that player just ran out of cards, their teammate gets the turn instead.</li>
+                <li>If a player runs out of cards at any point, they are out for the rest of the game. The opposing team directs all asks to the remaining player on that team.</li>
+                <li>The game also ends if a team runs out of cards after a successful declaration. The team with the higher score at that moment wins. If tied, it's a draw.</li>
+              </ol>
+            </div>
+          )}
+        </div>
       </div>
     )
   }
