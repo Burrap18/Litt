@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import Hand from './hand'
+import Hand from './Hand'
 import DeclareModal from './DeclareModal'
 
 // Maps case keys to short display names
