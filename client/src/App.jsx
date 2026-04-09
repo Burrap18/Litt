@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { io } from 'socket.io-client'
 import Lobby from './Lobby'
-import Game from './Game'
+import Game from './game'
 
 // Create the socket connection once — persists for the whole session
 const socket = io('https://litt-server.onrender.com')

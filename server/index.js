@@ -79,6 +79,9 @@ io.on('connection', (socket) => {
       const existingPlayer = room.players.find(p => p.name === playerName)
 
       if (existingPlayer) {
+        // Save old ID before overwriting it
+        const oldSocketId = existingPlayer.id
+
         // Rejoin — update their socket ID and put them back in
         existingPlayer.id = socket.id
         socket.join(roomId)
@@ -86,20 +89,20 @@ io.on('connection', (socket) => {
         socket.playerName = playerName
 
         // Update the game state with their new socket ID
-        if (room.gameState && room.gameState.players[existingPlayer.id]) {
-          const playerData = room.gameState.players[existingPlayer.id]
-          delete room.gameState.players[existingPlayer.id]
+        if (room.gameState && room.gameState.players[oldSocketId]) {
+          const playerData = room.gameState.players[oldSocketId]
+          delete room.gameState.players[oldSocketId]
           room.gameState.players[socket.id] = { ...playerData, id: socket.id }
 
           // Update teams
           for (const team of Object.keys(room.gameState.teams)) {
             room.gameState.teams[team] = room.gameState.teams[team].map(
-              id => id === existingPlayer.id ? socket.id : id
+              id => id === oldSocketId ? socket.id : id
             )
           }
 
           // Update currentTurn if it was this player's turn
-          if (room.gameState.currentTurn === existingPlayer.id) {
+          if (room.gameState.currentTurn === oldSocketId) {
             room.gameState.currentTurn = socket.id
           }
         }
@@ -109,7 +112,8 @@ io.on('connection', (socket) => {
         socket.emit('game-update', buildViewFor(socket.id, room.gameState))
         console.log(`${playerName} rejoined room ${roomId}`)
         return
-      } else {
+      } 
+      else {
         socket.emit('error', 'Game already started')
         return
       }
