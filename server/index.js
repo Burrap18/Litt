@@ -244,17 +244,28 @@ io.on('connection', (socket) => {
     console.log('A player disconnected:', socket.id)
 
     const room = rooms[socket.roomId]
-    if (room) {
-      // Remove the player from the room
-      room.players = room.players.filter(p => p.id !== socket.id)
 
-      // If the room is now empty, delete it entirely
-      if (room.players.length === 0) {
-        delete rooms[socket.roomId]
-        console.log(`Room ${socket.roomId} deleted — no players left`)
+    if (room) {
+      if (room.status === 'in-progress') {
+        // Game in progress — don't remove the player, just mark them
+        // as disconnected so they can rejoin with the same name
+        const player = room.players.find(p => p.id === socket.id)
+        if (player) {
+          player.disconnected = true
+          console.log(`${player.name} disconnected from active game — kept in room for rejoin`)
+        }
       } else {
-        // Tell remaining players someone left
-        io.to(socket.roomId).emit('lobby-update', { players: room.players })
+        // Still in lobby — remove them and update the lobby
+        room.players = room.players.filter(p => p.id !== socket.id)
+
+        // If the room is now empty, delete it entirely
+        if (room.players.length === 0) {
+          delete rooms[socket.roomId]
+          console.log(`Room ${socket.roomId} deleted — no players left`)
+        } else {
+          // Tell remaining players someone left
+          io.to(socket.roomId).emit('lobby-update', { players: room.players })
+        }
       }
     }
   })
