@@ -79,6 +79,7 @@ io.on('connection', (socket) => {
       const existingPlayer = room.players.find(p => p.name === playerName)
 
       if (existingPlayer) {
+        console.log(`Rejoin attempt by ${playerName} — found existing player`)
         // Save old ID before overwriting it
         const oldSocketId = existingPlayer.id
 
@@ -108,7 +109,8 @@ io.on('connection', (socket) => {
         }
 
         // Send them straight back into the game
-        socket.emit('game-started', { players: room.players })
+          console.log(`${playerName} rejoined successfully, sending game-started with isRejoin: true`)
+        socket.emit('game-started', { players: room.players, isRejoin: true })
         socket.emit('game-update', buildViewFor(socket.id, room.gameState))
         console.log(`${playerName} rejoined room ${roomId}`)
         return
