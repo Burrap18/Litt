@@ -386,8 +386,45 @@ function Game({ socket, roomId }) {
                   LAST MOVE
                 </div>
                 {lastMove.isDeclare ? (
-                  <div style={{ fontSize: '11px', color: '#888', textAlign: 'center' }}>
-                    {lastMove.message}
+                  <div style={{ fontSize: '11px', color: '#888' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '6px', color: lastMove.caseWonBy === gameState?.myTeam ? '#9fe1cb' : '#f0997b', fontWeight: '600' }}>
+                      {lastMove.message}
+                    </div>
+                    {/* Show composition — who held which cards */}
+                    {lastMove.composition && Object.values(lastMove.composition).map(entry => (
+                      <div key={entry.name} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        marginBottom: '3px',
+                        fontSize: '10px'
+                      }}>
+                        <span style={{
+                          color: entry.role === 'opponent' ? '#f0997b' : '#9fe1cb',
+                          minWidth: '50px',
+                          fontWeight: '500'
+                        }}>
+                          {entry.name}:
+                        </span>
+                        <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap' }}>
+                          {entry.cards.map(cardId => {
+                            const isRed = ['H','D'].includes(cardId.slice(-1))
+                            return (
+                              <span key={cardId} style={{
+                                background: '#f5f0e8',
+                                borderRadius: '3px',
+                                padding: '1px 4px',
+                                fontSize: '10px',
+                                fontWeight: '700',
+                                color: isRed ? '#cc0000' : '#111'
+                              }}>
+                                {cardId}
+                              </span>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <>

@@ -75,14 +75,12 @@ io.on('connection', (socket) => {
     }
 
     if (room.status === 'in-progress') {
-      console.log(`Room ${roomId} is in progress. Looking for player: "${playerName}"`)
-      console.log(`Players in room: ${room.players.map(p => p.name).join(', ')}`)
+      
       // Check if this player was already in the game
       const existingPlayer = room.players.find(p => p.name === playerName)
-      console.log(`Existing player found: ${existingPlayer ? 'YES' : 'NO'}`)
+      
 
       if (existingPlayer) {
-        console.log(`Rejoin attempt by ${playerName} — found existing player`)
         // Save old ID before overwriting it
         const oldSocketId = existingPlayer.id
 
@@ -112,7 +110,7 @@ io.on('connection', (socket) => {
         }
 
         // Send them straight back into the game
-          console.log(`${playerName} rejoined successfully, sending game-started with isRejoin: true`)
+          
         socket.emit('game-started', { players: room.players, isRejoin: true })
         socket.emit('game-update', buildViewFor(socket.id, room.gameState))
         console.log(`${playerName} rejoined room ${roomId}`)
@@ -241,7 +239,6 @@ io.on('connection', (socket) => {
 
   // --- DISCONNECT ---
   socket.on('disconnect', () => {
-    console.log('A player disconnected:', socket.id)
 
     const room = rooms[socket.roomId]
 
@@ -252,7 +249,6 @@ io.on('connection', (socket) => {
         const player = room.players.find(p => p.id === socket.id)
         if (player) {
           player.disconnected = true
-          console.log(`${player.name} disconnected from active game — kept in room for rejoin`)
         }
       } else {
         // Still in lobby — remove them and update the lobby
@@ -261,7 +257,6 @@ io.on('connection', (socket) => {
         // If the room is now empty, delete it entirely
         if (room.players.length === 0) {
           delete rooms[socket.roomId]
-          console.log(`Room ${socket.roomId} deleted — no players left`)
         } else {
           // Tell remaining players someone left
           io.to(socket.roomId).emit('lobby-update', { players: room.players })

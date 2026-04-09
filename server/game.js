@@ -459,6 +459,28 @@ const teammateId = getTeammate(declaringId, teams)
     opponentCards[playerId] = cards
     if (cards.length > 0) opponentsHoldAny = true
   })
+  
+  // --- BUILD COMPOSITION MAP ---
+  // Record which player held which cards before removal
+  // so we can show it in the UI after declaration
+  const composition = {}
+  const allPlayerIds = [declaringId, teammateId, ...opposingPlayerIds]
+    .filter(id => id && players[id])
+
+  allPlayerIds.forEach(playerId => {
+    const heldCards = players[playerId].hand.filter(card =>
+      allCaseCardIds.includes(card.id)
+    )
+    if (heldCards.length > 0) {
+      composition[playerId] = {
+        name: players[playerId].name,
+        cards: heldCards.map(c => c.id),
+        role: playerId === declaringId ? 'declarer'
+          : playerId === teammateId ? 'partner'
+          : 'opponent'
+      }
+    }
+  })
 
  // --- REMOVE ALL 6 CARDS FROM ALL HANDS ---// --- REMOVE ALL 6 CARDS FROM ALL HANDS ---
   // This always happens regardless of whether declaration succeeded or failed.
@@ -496,6 +518,7 @@ const teammateId = getTeammate(declaringId, teams)
         success: true,
         caseWonBy: winningTeam,
         caseKey,
+        composition,
         gameOver: true,
         winner: winResult.winner,
         reason: winResult.reason,
@@ -540,6 +563,7 @@ const teammateId = getTeammate(declaringId, teams)
         success: true,
         caseWonBy: winningTeam,
         caseKey,
+        composition,      
         gameOver: true,
         winner: winResult.winner,
         reason: winResult.reason,
@@ -601,6 +625,7 @@ const teammateId = getTeammate(declaringId, teams)
     success: true,
     caseWonBy: winningTeam,
     caseKey,
+    composition,
     gameOver: false,
     nextTurn,
     message: winningTeam === declaringTeam
