@@ -108,7 +108,7 @@ function PlayerSlot({ player, isMe, isTeammate, isSelected, isHinting, isTurn, o
   )
 }
 
-function Game({ socket }) {
+function Game({ socket, roomId }) {
   const [gameState, setGameState]       = useState(null)
   const [selectedCard, setSelectedCard] = useState(null)
   const [selectedTarget, setSelectedTarget] = useState(null)
@@ -126,6 +126,10 @@ function Game({ socket }) {
     : 3
 
   useEffect(() => {
+    // Request current game state immediately on mount —
+    // fixes mobile timing issue where game-update arrives
+    // before the component is ready to receive it
+    socket.emit('request-game-state')
     socket.on('game-update', (state) => {
       setGameState(state)
       setError('')
@@ -294,7 +298,13 @@ function Game({ socket }) {
         L I T T
       </div>
 
-      {/* Score bar */}
+     {/* Room code + score bar */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '6px' }}>
+        <div style={{ fontSize: '11px', color: '#666', letterSpacing: '1px' }}>
+          ROOM CODE: <span style={{ color: '#fac775', fontWeight: '600', letterSpacing: '2px' }}>{roomId}</span>
+          <span style={{ color: '#555', marginLeft: '8px', fontSize: '10px' }}>— share this to rejoin</span>
+        </div>
+      </div>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '12px' }}>
         <div style={{ padding: '3px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', background: '#1f3520', color: '#9fe1cb', border: '1px solid #3b6d11' }}>
           Team A: {gameState.score.A}{myTeam === 'A' ? ' (you)' : ''}

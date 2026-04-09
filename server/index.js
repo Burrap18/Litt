@@ -65,7 +65,7 @@ io.on('connection', (socket) => {
     console.log(`Room ${roomId} created by ${playerName}`)
   })
 
-  // --- JOIN ROOM ---
+// --- JOIN ROOM ---
   socket.on('join-room', ({ roomId, playerName }) => {
     const room = rooms[roomId]
 
@@ -73,10 +73,48 @@ io.on('connection', (socket) => {
       socket.emit('error', 'Room not found')
       return
     }
-    if (room.status !== 'waiting') {
-      socket.emit('error', 'Game already started')
-      return
+
+    if (room.status === 'in-progress') {
+      // Check if this player was already in the game
+      const existingPlayer = room.players.find(p => p.name === playerName)
+
+      if (existingPlayer) {
+        // Rejoin — update their socket ID and put them back in
+        existingPlayer.id = socket.id
+        socket.join(roomId)
+        socket.roomId = roomId
+        socket.playerName = playerName
+
+        // Update the game state with their new socket ID
+        if (room.gameState && room.gameState.players[existingPlayer.id]) {
+          const playerData = room.gameState.players[existingPlayer.id]
+          delete room.gameState.players[existingPlayer.id]
+          room.gameState.players[socket.id] = { ...playerData, id: socket.id }
+
+          // Update teams
+          for (const team of Object.keys(room.gameState.teams)) {
+            room.gameState.teams[team] = room.gameState.teams[team].map(
+              id => id === existingPlayer.id ? socket.id : id
+            )
+          }
+
+          // Update currentTurn if it was this player's turn
+          if (room.gameState.currentTurn === existingPlayer.id) {
+            room.gameState.currentTurn = socket.id
+          }
+        }
+
+        // Send them straight back into the game
+        socket.emit('game-started', { players: room.players })
+        socket.emit('game-update', buildViewFor(socket.id, room.gameState))
+        console.log(`${playerName} rejoined room ${roomId}`)
+        return
+      } else {
+        socket.emit('error', 'Game already started')
+        return
+      }
     }
+
     if (room.players.length >= 4) {
       socket.emit('error', 'Room is full')
       return
@@ -87,9 +125,17 @@ io.on('connection', (socket) => {
     socket.roomId = roomId
     socket.playerName = playerName
 
-    // Tell everyone in the room the updated player list
     io.to(roomId).emit('lobby-update', { players: room.players })
     console.log(`${playerName} joined room ${roomId}`)
+  })
+
+  // --- REQUEST GAME STATE ---
+  // Called by client when it mounts the Game component
+  // to ensure it always has the latest state
+  socket.on('request-game-state', () => {
+    const room = rooms[socket.roomId]
+    if (!room || !room.gameState) return
+    socket.emit('game-update', buildViewFor(socket.id, room.gameState))
   })
 
   // --- START GAME ---

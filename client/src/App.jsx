@@ -38,7 +38,7 @@ function App() {
 
   // Show game screen once started
   if (screen === 'game') {
-    return <Game socket={socket} initialData={initialData} />
+    return <Game socket={socket} initialData={initialData} roomId={initialData?.roomId} />
   }
 
   // Default: show the lobby
