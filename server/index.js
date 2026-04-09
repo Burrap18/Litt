@@ -75,8 +75,11 @@ io.on('connection', (socket) => {
     }
 
     if (room.status === 'in-progress') {
+      console.log(`Room ${roomId} is in progress. Looking for player: "${playerName}"`)
+      console.log(`Players in room: ${room.players.map(p => p.name).join(', ')}`)
       // Check if this player was already in the game
       const existingPlayer = room.players.find(p => p.name === playerName)
+      console.log(`Existing player found: ${existingPlayer ? 'YES' : 'NO'}`)
 
       if (existingPlayer) {
         console.log(`Rejoin attempt by ${playerName} — found existing player`)
