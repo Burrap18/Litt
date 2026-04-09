@@ -47,12 +47,15 @@ function Lobby({ socket, onGameStart }) {
     // update our display whenever someone joins or leaves
     socket.on('lobby-update', ({ players }) => {
       setPlayers(players)
+      // Only switch to waiting screen on a normal join
+      if (screen === 'home') setScreen('waiting')
     })
 
     // Server says the game is starting —
     // call the parent callback to switch to the game screen
-    socket.on('game-started', ({ players }) => {
-      onGameStart({ players, roomId: currentRoomId })
+    socket.on('game-started', ({ players, isRejoin }) => {
+      // On rejoin, currentRoomId may not be set yet — use the roomId from join
+      onGameStart({ players, roomId: currentRoomId || roomId.toUpperCase() })
     })
 
     // Server sent an error — show it to the player
@@ -92,10 +95,14 @@ function Lobby({ socket, onGameStart }) {
       return
     }
     setError('')
-    // Emit join-room with both the room ID and player name
-    socket.emit('join-room', { roomId: roomId.toUpperCase(), playerName })
-    setCurrentRoomId(roomId.toUpperCase())
-    setScreen('waiting')
+    // Store the room ID before emitting so it's available when
+    // game-started fires immediately on a rejoin
+    const upperRoomId = roomId.toUpperCase()
+    setCurrentRoomId(upperRoomId)
+    socket.emit('join-room', { roomId: upperRoomId, playerName })
+    // Don't set screen to waiting here — let the server response decide
+    // If it's a normal join, lobby-update will come and we stay here
+    // If it's a rejoin, game-started will come and we go straight to game
   }
 
   // Called when the host clicks "Start game"
