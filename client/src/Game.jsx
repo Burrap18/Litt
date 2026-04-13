@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import Hand from './Hand'
 import DeclareModal from './DeclareModal'
 
-// Maps case keys to short display names
+// Maps case keys to short display names  
 const CASE_NAMES = {
   'hearts-lower':   '♥ 3–8', 'hearts-upper':   '♥ 9–A',
   'diamonds-lower': '♦ 3–8', 'diamonds-upper': '♦ 9–A',
@@ -129,7 +129,11 @@ function Game({ socket, roomId }) {
     // Request current game state immediately on mount —
     // fixes mobile timing issue where game-update arrives
     // before the component is ready to receive it
-    socket.emit('request-game-state')
+     // Small delay ensures the rejoin has completed on the server
+    // before we request the game state — fixes mobile reconnect timing
+    const timeout = setTimeout(() => {
+      socket.emit('request-game-state')
+    }, 500)
     socket.on('game-update', (state) => {
       setGameState(state)
       setError('')
@@ -158,6 +162,7 @@ function Game({ socket, roomId }) {
     })
 
     return () => {
+      clearTimeout(timeout)
       socket.off('game-update')
       socket.off('ask-result')
       socket.off('declaration-result')
