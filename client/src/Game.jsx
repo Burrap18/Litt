@@ -134,6 +134,24 @@ function Game({ socket, roomId }) {
     const timeout = setTimeout(() => {
       socket.emit('request-game-state')
     }, 500)
+
+    // Handle reconnection while on the game screen —
+    // when phone screen auto-locks, browser suspends JS entirely.
+    // When it wakes up, socket reconnects and we need to rejoin automatically.
+    socket.on('connect', () => {
+      const savedName = sessionStorage.getItem('litt-playerName')
+      const savedRoom = sessionStorage.getItem('litt-roomId')
+      const savedScreen = sessionStorage.getItem('litt-screen')
+
+      if (savedScreen === 'game' && savedName && savedRoom) {
+        // Rejoin the room first, then request game state after a delay
+        socket.emit('join-room', { roomId: savedRoom, playerName: savedName })
+        setTimeout(() => {
+          socket.emit('request-game-state')
+        }, 1000)
+      }
+    })
+
     socket.on('game-update', (state) => {
       setGameState(state)
       setError('')
@@ -163,6 +181,7 @@ function Game({ socket, roomId }) {
 
     return () => {
       clearTimeout(timeout)
+      socket.off('connect')
       socket.off('game-update')
       socket.off('ask-result')
       socket.off('declaration-result')
