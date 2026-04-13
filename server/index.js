@@ -139,9 +139,18 @@ io.on('connection', (socket) => {
   // --- REQUEST GAME STATE ---
   // Called by client when it mounts the Game component
   // to ensure it always has the latest state
-  socket.on('request-game-state', () => {
+ socket.on('request-game-state', () => {
+    console.log(`request-game-state from socket ${socket.id}, roomId: ${socket.roomId}`)
     const room = rooms[socket.roomId]
-    if (!room || !room.gameState) return
+    if (!room) {
+      console.log(`No room found for ${socket.roomId}`)
+      return
+    }
+    if (!room.gameState) {
+      console.log(`Room found but no gameState`)
+      return
+    }
+    console.log(`Sending game state to ${socket.id}`)
     socket.emit('game-update', buildViewFor(socket.id, room.gameState))
   })
 
