@@ -132,7 +132,9 @@ function Game({ socket, roomId }) {
      // Small delay ensures the rejoin has completed on the server
     // before we request the game state — fixes mobile reconnect timing
     const timeout = setTimeout(() => {
-      socket.emit('request-game-state')
+      socket.emit('request-game-state', { 
+        roomId: sessionStorage.getItem('litt-roomId') 
+      })
     }, 500)
 
     // Handle reconnection while on the game screen —
@@ -147,7 +149,9 @@ function Game({ socket, roomId }) {
         // Rejoin the room first, then request game state after a delay
         socket.emit('join-room', { roomId: savedRoom, playerName: savedName })
         setTimeout(() => {
-          socket.emit('request-game-state')
+          socket.emit('request-game-state', { 
+            roomId: sessionStorage.getItem('litt-roomId') 
+          })
         }, 1000)
       }
     })

@@ -140,6 +140,8 @@ io.on('connection', (socket) => {
   // Called by client when it mounts the Game component
   // to ensure it always has the latest state
  socket.on('request-game-state', () => {
+  // Use provided roomId or fall back to socket.roomId
+    const targetRoomId = roomId || socket.roomId
     console.log(`request-game-state from socket ${socket.id}, roomId: ${socket.roomId}`)
     const room = rooms[socket.roomId]
     if (!room) {
@@ -150,6 +152,8 @@ io.on('connection', (socket) => {
       console.log(`Room found but no gameState`)
       return
     }
+    // Also set socket.roomId if it wasn't set yet
+    if (!socket.roomId) socket.roomId = targetRoomId
     console.log(`Sending game state to ${socket.id}`)
     socket.emit('game-update', buildViewFor(socket.id, room.gameState))
   })
