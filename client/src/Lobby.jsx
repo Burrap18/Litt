@@ -74,13 +74,13 @@ function Lobby({ socket, onGameStart }) {
 
   // Called when the player clicks "Create game"
   const handleCreateRoom = () => {
-    // Don't proceed if name is empty
     if (!playerName.trim()) {
       setError('Please enter your name')
       return
     }
     setError('')
-    // Emit the create-room event to the server with the player's name
+    // Save player name for reconnection
+    sessionStorage.setItem('litt-playerName', playerName)
     socket.emit('create-room', { playerName })
   }
 
@@ -99,6 +99,8 @@ function Lobby({ socket, onGameStart }) {
     // game-started fires immediately on a rejoin
     const upperRoomId = roomId.toUpperCase()
     setCurrentRoomId(upperRoomId)
+    // Save player name for reconnection
+    sessionStorage.setItem('litt-playerName', playerName)
     socket.emit('join-room', { roomId: upperRoomId, playerName })
     // Don't set screen to waiting here — let the server response decide
     // If it's a normal join, lobby-update will come and we stay here
