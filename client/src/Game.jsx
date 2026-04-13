@@ -146,16 +146,15 @@ function Game({ socket, roomId }) {
       const savedScreen = sessionStorage.getItem('litt-screen')
 
       if (savedScreen === 'game' && savedName && savedRoom) {
-        // Rejoin the room first, then request game state after a delay
+        // Rejoin the room first
         socket.emit('join-room', { roomId: savedRoom, playerName: savedName })
+        // Then request game state after a delay, passing roomId explicitly
+        // so the server can find the room even if socket.roomId isn't set yet
         setTimeout(() => {
-          socket.emit('request-game-state', { 
-            roomId: sessionStorage.getItem('litt-roomId') 
-          })
+          socket.emit('request-game-state', { roomId: savedRoom })
         }, 1000)
       }
     })
-
     socket.on('game-update', (state) => {
       setGameState(state)
       setError('')
