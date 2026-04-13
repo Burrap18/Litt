@@ -145,6 +145,8 @@ function Game({ socket, roomId }) {
       const savedRoom = sessionStorage.getItem('litt-roomId')
       const savedScreen = sessionStorage.getItem('litt-screen')
 
+      console.log('Reconnect detected:', { savedName, savedRoom, savedScreen })
+
       if (savedScreen === 'game' && savedName && savedRoom) {
         // Rejoin the room first
         socket.emit('join-room', { roomId: savedRoom, playerName: savedName })
